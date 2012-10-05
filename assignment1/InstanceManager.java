@@ -66,7 +66,7 @@ public class InstanceManager {
     try {
       for(Employee employee: employees) {
         String amiName = employee.getUsername() + "-" + new Random().nextInt();
-        String amiId = snapshotAndTerminateInst(employee.getInstanceId(),
+        String amiId = snapshotAndTermInst(employee.getInstanceId(),
             employee.getVolumeIds(), employee.getIp(), amiName);
         employee.setAmiId(amiId);
       }
@@ -82,7 +82,7 @@ public class InstanceManager {
     for(Employee employee: employees) {
       if ((ec2OpWrapper.getCpuUsage(employee.getInstanceId(), 10)) < 0.05) {
         String amiName = employee.getUsername() + "-" + new Random().nextInt();
-        String amiId = snapshotAndTerminateInst(employee.getInstanceId(),
+        String amiId = snapshotAndTermInst(employee.getInstanceId(),
             employee.getVolumeIds(), employee.getIp(), amiName);
         employee.setAmiId(amiId);
       }
