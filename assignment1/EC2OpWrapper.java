@@ -4,13 +4,23 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
+import java.util.TimeZone;
 
 import com.amazonaws.AmazonServiceException;
+import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.services.cloudwatch.AmazonCloudWatchClient;
+import com.amazonaws.services.cloudwatch.model.Datapoint;
+import com.amazonaws.services.cloudwatch.model.Dimension;
+import com.amazonaws.services.cloudwatch.model.GetMetricStatisticsRequest;
+import com.amazonaws.services.cloudwatch.model.GetMetricStatisticsResult;
 import com.amazonaws.services.ec2.AmazonEC2;
+import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.amazonaws.services.ec2.model.AllocateAddressResult;
 import com.amazonaws.services.ec2.model.AssociateAddressRequest;
 import com.amazonaws.services.ec2.model.AttachVolumeRequest;
@@ -36,12 +46,17 @@ import com.amazonaws.services.ec2.model.RunInstancesResult;
 import com.amazonaws.services.ec2.model.StopInstancesRequest;
 import com.amazonaws.services.ec2.model.Tag;
 import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
+import com.amazonaws.services.s3.AmazonS3Client;
 
 public class EC2OpWrapper {
   private final AmazonEC2 ec2;
+  private final AmazonCloudWatchClient cloudWatch;
+  private final AmazonS3Client s3;
   
-  public EC2OpWrapper(AmazonEC2 ec2) {
-    this.ec2 = ec2;
+  public EC2OpWrapper(AWSCredentials credentials) {
+    ec2 = new AmazonEC2Client(credentials);
+    cloudWatch = new AmazonCloudWatchClient(credentials);
+    s3 = new AmazonS3Client(credentials);
   }
 
   public void createKeyPair(String keyPairName)
@@ -241,5 +256,42 @@ public class EC2OpWrapper {
     System.out.println("Terminate the Instance " + instanceId + " ...");
     TerminateInstancesRequest tir = new TerminateInstancesRequest(instanceIds);
     ec2.terminateInstances(tir);
+  }
+  
+  public double getCpuUsage(String instanceId, int intervalInMinute) {
+    //create request message
+    GetMetricStatisticsRequest statRequest = new GetMetricStatisticsRequest();
+    
+    //set up request message
+    statRequest.setNamespace("AWS/EC2"); //namespace
+    statRequest.setPeriod(60); //period of data
+    ArrayList<String> stats = new ArrayList<String>();
+    
+    //Use one of these strings: Average, Maximum, Minimum, SampleCount, Sum 
+    stats.add("Average"); 
+    statRequest.setStatistics(stats);
+    
+    //Use one of these strings: CPUUtilization, NetworkIn, NetworkOut, DiskReadBytes, DiskWriteBytes, DiskReadOperations  
+    statRequest.setMetricName("CPUUtilization"); 
+    
+    // set time
+    GregorianCalendar calendar = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+    calendar.add(GregorianCalendar.SECOND, -1 * calendar.get(GregorianCalendar.SECOND)); // 1 second ago
+    Date endTime = calendar.getTime();
+    calendar.add(GregorianCalendar.MINUTE, -intervalInMinute); // 10 minutes ago
+    Date startTime = calendar.getTime();
+    statRequest.setStartTime(startTime);
+    statRequest.setEndTime(endTime);
+    
+    //specify an instance
+    ArrayList<Dimension> dimensions = new ArrayList<Dimension>();
+    dimensions.add(new Dimension().withName("InstanceId").withValue(instanceId));
+    statRequest.setDimensions(dimensions);
+    
+    //get statistics
+    GetMetricStatisticsResult statResult = cloudWatch.getMetricStatistics(statRequest);
+    
+    List<Datapoint> dataList = statResult.getDatapoints();
+    return dataList.get(0).getAverage();
   }
 }
