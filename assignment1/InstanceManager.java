@@ -9,14 +9,14 @@ import com.amazonaws.auth.AWSCredentials;
 
 public class InstanceManager {
   private final ArrayList<Employee> employees;
-  private final EC2OpWrapper ec2OpWrapper;
+  private final Ec2OpWrapper ec2OpWrapper;
   private final HashMap<String, ArrayList<Integer>> policy;
   
   public InstanceManager(ArrayList<Employee> employees,
       HashMap<String, ArrayList<Integer>> policy,
       AWSCredentials credentials) {
     this.employees = employees;
-    ec2OpWrapper = new EC2OpWrapper(credentials);
+    ec2OpWrapper = new Ec2OpWrapper(credentials);
     this.policy = policy;
   }
 
@@ -80,6 +80,13 @@ public class InstanceManager {
     }
   }
 
+  public void examAndTermIdleInsts() {
+    for(Employee employee: employees) {
+
+    }
+  }
+
+  
   public String createInstance(String amiId, String keyPairName,
       String groupName, String ip, ArrayList<String> volumeIds, String tag) 
       throws AmazonServiceException {

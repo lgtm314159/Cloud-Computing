@@ -48,12 +48,12 @@ import com.amazonaws.services.ec2.model.Tag;
 import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
 import com.amazonaws.services.s3.AmazonS3Client;
 
-public class EC2OpWrapper {
+public class Ec2OpWrapper {
   private final AmazonEC2 ec2;
   private final AmazonCloudWatchClient cloudWatch;
   private final AmazonS3Client s3;
   
-  public EC2OpWrapper(AWSCredentials credentials) {
+  public Ec2OpWrapper(AWSCredentials credentials) {
     ec2 = new AmazonEC2Client(credentials);
     cloudWatch = new AmazonCloudWatchClient(credentials);
     s3 = new AmazonS3Client(credentials);
