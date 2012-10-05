@@ -49,7 +49,6 @@ public class InstanceManager {
   public void createMorningInstances() {
     try {
       for(Employee employee: employees) {
-  
           String createdInstanceId = createInstance(employee.getAmiId(),
               employee.getKeyPairName(), employee.getGroup(), employee.getIp(),
               employee.getVolumeIds(), employee.getUsername());
@@ -66,7 +65,6 @@ public class InstanceManager {
   public void afterWorkCleanup() {
     try {
       for(Employee employee: employees) {
-  
         String amiName = employee.getUsername() + "-" + new Random().nextInt();
         String amiId = snapshotAndTerminateInst(employee.getInstanceId(),
             employee.getVolumeIds(), employee.getIp(), amiName);
@@ -82,11 +80,15 @@ public class InstanceManager {
 
   public void examAndTermIdleInsts() {
     for(Employee employee: employees) {
-
+      if ((ec2OpWrapper.getCpuUsage(employee.getInstanceId(), 10)) < 0.05) {
+        String amiName = employee.getUsername() + "-" + new Random().nextInt();
+        String amiId = snapshotAndTerminateInst(employee.getInstanceId(),
+            employee.getVolumeIds(), employee.getIp(), amiName);
+        employee.setAmiId(amiId);
+      }
     }
   }
 
-  
   public String createInstance(String amiId, String keyPairName,
       String groupName, String ip, ArrayList<String> volumeIds, String tag) 
       throws AmazonServiceException {
