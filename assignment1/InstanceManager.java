@@ -100,7 +100,7 @@ public class InstanceManager {
     return createdInstanceId;
   }
 
-  public String snapshotAndTerminateInst(String instanceId,
+  public String snapshotAndTermInst(String instanceId,
       ArrayList<String> volumeIds, String ip, String amiName) 
       throws AmazonServiceException {
     ec2OpWrapper.detachVolumes(instanceId, volumeIds);
