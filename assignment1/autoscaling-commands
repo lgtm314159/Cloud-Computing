@@ -1,0 +1,17 @@
+elb-create-lb <load-balancer-name> --headers --listener "lb-port=80,instance-port=80,protocol=http" --availability-zones us-east-1a,us-east-1c
+
+elb-register-instances-with-lb junyangLB --headers --instances <instanceId>
+
+elb-configure-healthcheck <load-balancer-name> --headers --target "HTTP:80/index.html" --interval 30 --timeout 3 --unhealthy-threshold 2 --healthy-threshold 10
+
+as-create-launch-config <launch-config-name> --image-id <amiId> --instance-type t1.micro
+
+as-create-auto-scaling-group <auto-scaling-group-name> --launch-configuration <launch-config-name> --availability-zones us-east-1a,us-east-1c --min-size 0 --max-size 1 --default-cooldown 120 --load-balancers <load-balancer-name>
+
+as-put-scaling-policy scaleUp --auto-scaling-group <auto-scaling-group-name> --adjustment=1 --type ChangeInCapacity --cooldown 300
+
+as-put-scaling-policy scaleDown --auto-scaling-group <auto-scaling-group-name> --adjustment=-1 --type ChangeInCapacity --cooldown 300
+
+mon-put-metric-alarm MyHighCPUAlarm --comparison-operator GreaterThanThreshold --evaluation-periods 1 --metric-name CPUUtilization --namespace "AWS/EC2" --period 60 --statistic Average --threshold 80 --alarm-actions <scaleUp-policy-arn> --dimensions InstanceId=<instance-id-to-be-monitored>
+
+mon-put-metric-alarm MyLowCPUAlarm --comparison-operator LessThanThreshold --evaluation-periods 1 --metric-name CPUUtilization --namespace "AWS/EC2" --period 60 --statistic Average --threshold 40 --alarm-actions <scaleDown-policy-arn> --dimensions InstanceId=<instance-id-to-be-monitored>
