@@ -6,7 +6,6 @@ import java.util.HashMap;
 
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.PropertiesCredentials;
-import com.amazonaws.services.ec2.AmazonEC2Client;
 
 public class Simulator {
   public static void main(String[] args) {
@@ -17,9 +16,29 @@ public class Simulator {
       HashMap<String, ArrayList<Integer>> policy = createPolicy();
       InstanceManager instManager = new InstanceManager(employees, policy,
           credentials);
+      System.out.println("Day1 morning begins... Creating instances...");
       instManager.initialize();
-      System.out.println("cleaning up after work...");
+      System.out.println("Doing some work...");
+      int i = 0;
+      // 15 mins for testing the elastic provisioning for super user employee2
+      // and automatic termination of idle instance of user employee1.
+      // This includes manually running commands in the autoscaling-commands
+      // file and ssh into instances for both employees to stop the cpu 
+      // intensive.
+      while (i < 180) {
+        instManager.examAndTermIdleInsts();
+        try {
+          Thread.sleep(5000);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+        ++i;
+      }
+      System.out.println("Day1 5pm! Go home! Cleaning up after work...");
       instManager.afterWorkCleanup();
+      System.out.println("Day2 morning begins... " +
+      		"Creating instances from yesterday's snapshot...");
+      instManager.createMorningInstances();
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -38,9 +57,9 @@ public class Simulator {
   
   public static ArrayList<Employee> createEmployees() {
     ArrayList<Employee> employees = new ArrayList<Employee>();
-    Employee employee1 = new Employee("employee1", "superuser");
+    Employee employee1 = new Employee("employee1", "user");
     employee1.setKeyPairName("employee1-keypair");
-    Employee employee2 = new Employee("employee2", "user");
+    Employee employee2 = new Employee("employee2", "superuser");
     employee2.setKeyPairName("employee2-keypair");
     employees.add(employee1);
     employees.add(employee2);

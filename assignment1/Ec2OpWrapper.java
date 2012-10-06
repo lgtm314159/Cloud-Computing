@@ -33,6 +33,7 @@ import com.amazonaws.services.ec2.model.CreateSecurityGroupRequest;
 import com.amazonaws.services.ec2.model.CreateTagsRequest;
 import com.amazonaws.services.ec2.model.CreateVolumeRequest;
 import com.amazonaws.services.ec2.model.CreateVolumeResult;
+import com.amazonaws.services.ec2.model.DescribeImagesRequest;
 import com.amazonaws.services.ec2.model.DescribeInstanceStatusRequest;
 import com.amazonaws.services.ec2.model.DescribeInstanceStatusResult;
 import com.amazonaws.services.ec2.model.DetachVolumeRequest;
@@ -53,8 +54,8 @@ public class Ec2OpWrapper {
   private final AmazonCloudWatchClient cloudWatch;
   private final AmazonS3Client s3;
   
-  public Ec2OpWrapper(AWSCredentials credentials) {
-    ec2 = new AmazonEC2Client(credentials);
+  public Ec2OpWrapper(AmazonEC2 ec2, AWSCredentials credentials) {
+    this.ec2 = ec2;
     cloudWatch = new AmazonCloudWatchClient(credentials);
     s3 = new AmazonS3Client(credentials);
   }
@@ -212,7 +213,7 @@ public class Ec2OpWrapper {
     cir.setName(username + "-" + new Random().nextInt());
     CreateImageResult createImageResult = ec2.createImage(cir);
     String createdImageId = createImageResult.getImageId();
-    System.out.println("Ami created with id " + createdImageId);
+    //System.out.println("Ami created with id " + createdImageId);
     return createdImageId;
   }
 
@@ -290,7 +291,18 @@ public class Ec2OpWrapper {
     
     //get statistics
     GetMetricStatisticsResult statResult = cloudWatch.getMetricStatistics(statRequest);
-    
+    System.out.println("Waiting for the CPU utilization metrics...");
+    while(statResult.getDatapoints().size() == 0) {
+      statResult = cloudWatch.getMetricStatistics(statRequest);
+      System.out.println("Still waiting... Please be patient...");
+      try {
+        Thread.sleep(10000);
+      } catch (InterruptedException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+    }
+
     List<Datapoint> dataList = statResult.getDatapoints();
     return dataList.get(0).getAverage();
   }
