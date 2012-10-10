@@ -1,0 +1,5 @@
+1. Launch an instance.
+2. Create the stress cpu script on the instance and name it let say stress_cpu_employee1.sh.
+3. sudo chmod +x stress_cpu_employee1.sh
+4. sudo cp stress_cpu_employee1.sh /etc/init.d/
+5. sudo update-rc.d stress_cpu_employee1.sh defaults
