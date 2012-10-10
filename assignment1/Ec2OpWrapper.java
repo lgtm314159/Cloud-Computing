@@ -1,8 +1,11 @@
 package assignment1;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintStream;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -34,10 +37,12 @@ import com.amazonaws.services.ec2.model.CreateTagsRequest;
 import com.amazonaws.services.ec2.model.CreateVolumeRequest;
 import com.amazonaws.services.ec2.model.CreateVolumeResult;
 import com.amazonaws.services.ec2.model.DescribeImagesRequest;
+import com.amazonaws.services.ec2.model.DescribeImagesResult;
 import com.amazonaws.services.ec2.model.DescribeInstanceStatusRequest;
 import com.amazonaws.services.ec2.model.DescribeInstanceStatusResult;
 import com.amazonaws.services.ec2.model.DetachVolumeRequest;
 import com.amazonaws.services.ec2.model.DisassociateAddressRequest;
+import com.amazonaws.services.ec2.model.Image;
 import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.InstanceStatus;
 import com.amazonaws.services.ec2.model.IpPermission;
@@ -48,15 +53,17 @@ import com.amazonaws.services.ec2.model.StopInstancesRequest;
 import com.amazonaws.services.ec2.model.Tag;
 import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.PutObjectRequest;
 
 public class Ec2OpWrapper {
   private final AmazonEC2 ec2;
   private final AmazonCloudWatchClient cloudWatch;
   private final AmazonS3Client s3;
   
-  public Ec2OpWrapper(AmazonEC2 ec2, AWSCredentials credentials) {
-    this.ec2 = ec2;
+  public Ec2OpWrapper(AWSCredentials credentials) {
+    ec2 = new AmazonEC2Client(credentials);
     cloudWatch = new AmazonCloudWatchClient(credentials);
+    //cloudWatch.setEndpoint("https://monitoring.us-east-1.amazonaws.com");
     s3 = new AmazonS3Client(credentials);
   }
 
@@ -139,6 +146,11 @@ public class Ec2OpWrapper {
     System.out.println(
         "Waiting for the instance we just created to be fully " +
         "provisioned...");
+    // Waiting...
+    long start = System.currentTimeMillis();
+    while ((System.currentTimeMillis() - start) < 3 * 60 * 1000) {
+      ;
+    }
     DescribeInstanceStatusRequest describeInstanceRequest =
         new DescribeInstanceStatusRequest().withInstanceIds(createdInstanceId);
     DescribeInstanceStatusResult describeInstanceResult =
@@ -176,7 +188,7 @@ public class Ec2OpWrapper {
     // Create a volume.
     CreateVolumeRequest cvr = new CreateVolumeRequest();
     cvr.setAvailabilityZone("us-east-1a");
-    cvr.setSize(5); // size = 5 gigabytes
+    cvr.setSize(1); // size = 1 gigabytes
     CreateVolumeResult volumeResult = ec2.createVolume(cvr);
     String createdVolumeId = volumeResult.getVolume().getVolumeId();
     return createdVolumeId;
@@ -238,23 +250,75 @@ public class Ec2OpWrapper {
   }
 
   public String snapshot(String instanceId, String amiName) {
-    CreateImageRequest cir = new CreateImageRequest();
-    cir.setInstanceId(instanceId);
-    cir.setName(amiName);
-    CreateImageResult createImageResult = ec2.createImage(cir);
-    String createdImageId = createImageResult.getImageId();
-    return createdImageId;
-  }
-
-  public void terminateInstance(String instanceId) {
-    System.out.println("Stop the Instance " + instanceId + " ...");
+    System.out.println("Stop the Instance " + instanceId + " for snapshot...");
     List<String> instanceIds = new LinkedList<String>();
     instanceIds.add(instanceId);
     // Stop instance.
     StopInstancesRequest stopIR = new StopInstancesRequest(instanceIds);
     ec2.stopInstances(stopIR);
+    // Wait for the instance to be fully stopped.
+    DescribeInstanceStatusRequest describeInstanceRequest =
+        new DescribeInstanceStatusRequest().withInstanceIds(instanceId);
+    DescribeInstanceStatusResult describeInstanceResult =
+        ec2.describeInstanceStatus(describeInstanceRequest);
+    List<InstanceStatus> state = describeInstanceResult.getInstanceStatuses();
+    
+    // Waiting...
+    long start = System.currentTimeMillis();
+    while ((System.currentTimeMillis() - start) < 3 * 60 * 1000) {
+      ;
+    }
+    /*
+    while (state.size() < 1 ||
+        !state.get(0).getInstanceState().getName().equals("stopped")) {
+      try {
+        Thread.sleep(5000);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+      describeInstanceResult = ec2.describeInstanceStatus(describeInstanceRequest);
+      state = describeInstanceResult.getInstanceStatuses();
+    }
+    */
+    CreateImageRequest cir = new CreateImageRequest();
+    cir.setInstanceId(instanceId);
+    cir.setName(amiName);
+    CreateImageResult createImageResult = ec2.createImage(cir);
+    String createdImageId = createImageResult.getImageId();
+    
+    boolean isImaging = true;
+    System.out.println("Waiting for snapshot to be fully created...");
+    // Waiting...
+    start = System.currentTimeMillis();
+    while ((System.currentTimeMillis() - start) < 4 * 60 * 1000) {
+      ;
+    }
+    /*
+    while (isImaging) {
+      isImaging = false;
+      DescribeImagesRequest describeRequest = new DescribeImagesRequest().withImageIds(createdImageId);
+      DescribeImagesResult describeResponse = ec2.describeImages(describeRequest);
+      List<Image> images = describeResponse.getImages();
+      if (images.get(0).getState() != "available") {
+        System.out.println("Still imaging...");
+        isImaging = true;
+        try {
+          Thread.sleep(10000);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        } 
+      }
+    }
+    */
+    System.out.println("Snapshot has been fully created!");
+    return createdImageId;
+  }
+
+  public void terminateInstance(String instanceId) {
+    List<String> instanceIds = new LinkedList<String>();
+    instanceIds.add(instanceId);
     // Terminate instance.
-    System.out.println("Terminate the Instance " + instanceId + " ...");
+    System.out.println("Terminate the instance " + instanceId + " ...");
     TerminateInstancesRequest tir = new TerminateInstancesRequest(instanceIds);
     ec2.terminateInstances(tir);
   }
@@ -269,7 +333,8 @@ public class Ec2OpWrapper {
     ArrayList<String> stats = new ArrayList<String>();
     
     //Use one of these strings: Average, Maximum, Minimum, SampleCount, Sum 
-    stats.add("Average"); 
+    stats.add("Average");
+    stats.add("Sum");
     statRequest.setStatistics(stats);
     
     //Use one of these strings: CPUUtilization, NetworkIn, NetworkOut, DiskReadBytes, DiskWriteBytes, DiskReadOperations  
@@ -291,19 +356,47 @@ public class Ec2OpWrapper {
     
     //get statistics
     GetMetricStatisticsResult statResult = cloudWatch.getMetricStatistics(statRequest);
-    System.out.println("Waiting for the CPU utilization metrics...");
+    
     while(statResult.getDatapoints().size() == 0) {
-      statResult = cloudWatch.getMetricStatistics(statRequest);
-      System.out.println("Still waiting... Please be patient...");
+      System.out.println("Still waiting for CPU utilization metrics ... " +
+      		"Please be patient...");
+      System.out.println(statResult);
       try {
-        Thread.sleep(10000);
+        Thread.sleep(30000);
       } catch (InterruptedException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       }
+      statResult = cloudWatch.getMetricStatistics(statRequest);
     }
 
     List<Datapoint> dataList = statResult.getDatapoints();
     return dataList.get(0).getAverage();
+  }
+
+  public void createS3Bucket(String bucketName) {    
+    s3.createBucket(bucketName);
+  }
+  
+  public void createS3Files(ArrayList<String> fileNames, String bucketName) {
+    for (String fileName: fileNames) {
+      //set key
+      String key = fileName;
+      
+      //set value
+      String[] nameAndExtension = fileName.split(".");
+      File file;
+      try {
+        file = File.createTempFile(nameAndExtension[0], "." + nameAndExtension[1]);
+        file.deleteOnExit();
+        Writer writer = new OutputStreamWriter(new FileOutputStream(file));
+        writer.write("This is a sample sentence.\r\nYes!");
+        writer.close();
+        //put object - bucket, key, value(file)
+        s3.putObject(new PutObjectRequest(bucketName, key, file));
+      } catch (IOException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+    }
   }
 }

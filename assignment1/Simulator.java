@@ -20,15 +20,16 @@ public class Simulator {
       instManager.initialize();
       System.out.println("Doing some work...");
       int i = 0;
-      // 15 mins for testing the elastic provisioning for super user employee2
+      // 10 mins for testing the elastic provisioning for super user employee2
       // and automatic termination of idle instance of user employee1.
       // This includes manually running commands in the autoscaling-commands
       // file and ssh into instances for both employees to stop the cpu 
       // intensive.
-      while (i < 180) {
+      while (i < 30) {
+        System.out.println("Monitoring CPU usage of instances...");
         instManager.examAndTermIdleInsts();
         try {
-          Thread.sleep(5000);
+          Thread.sleep(10000);
         } catch (InterruptedException e) {
           e.printStackTrace();
         }
@@ -59,8 +60,12 @@ public class Simulator {
     ArrayList<Employee> employees = new ArrayList<Employee>();
     Employee employee1 = new Employee("employee1", "user");
     employee1.setKeyPairName("employee1-keypair");
+    employee1.setAmiId("ami-a2f04fcb");
+    employee1.setBucketName("employee1-bucket");
     Employee employee2 = new Employee("employee2", "superuser");
     employee2.setKeyPairName("employee2-keypair");
+    employee2.setAmiId("ami-a6f04fcf");
+    employee2.setBucketName("employee2-bucket");
     employees.add(employee1);
     employees.add(employee2);
     return employees;

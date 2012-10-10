@@ -11,7 +11,9 @@ public class Employee {
   private String amiId;
   private String keyPairName;
   private ArrayList<String> volumeIds;
-
+  private String bucketName;
+  private boolean isActive;
+  
   public Employee(String username, String group) {
     this.username = username;
     this.group = group;
@@ -80,5 +82,21 @@ public class Employee {
 
   public void setInstanceId(String instanceId) {
     this.instanceId = instanceId;
+  }
+  
+  public String getBucketName() {
+    return bucketName;
+  }
+
+  public void setBucketName(String bucketName) {
+    this.bucketName = bucketName;
+  }
+
+  public boolean isActive() {
+    return isActive;
+  }
+
+  public void setActiveStat(boolean isActive) {
+    this.isActive = isActive;
   }
 }
