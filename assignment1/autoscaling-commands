@@ -14,4 +14,4 @@ as-put-scaling-policy scaleDown --auto-scaling-group demoASG --adjustment=-1 --t
 
 mon-put-metric-alarm MyHighCPUAlarm --comparison-operator GreaterThanThreshold --evaluation-periods 1 --metric-name CPUUtilization --namespace "AWS/EC2" --period 60 --statistic Average --threshold 80 --alarm-actions <scaleUp-policy-arn> --dimensions InstanceId=<instance-id-to-be-monitored>
 
-mon-put-metric-alarm MyLowCPUAlarm --comparison-operator LessThanThreshold --evaluation-periods 1 --metric-name CPUUtilization --namespace "AWS/EC2" --period 60 --statistic Average --threshold 40 --alarm-actions <scaleDown-policy-arn> --dimensions InstanceId=<instance-id-to-be-monitored>
+mon-put-metric-alarm MyLowCPUAlarm --comparison-operator LessThanThreshold --evaluation-periods 1 --metric-name CPUUtilization --namespace "AWS/EC2" --period 60 --statistic Average --threshold 50 --alarm-actions <scaleDown-policy-arn> --dimensions InstanceId=<instance-id-to-be-monitored>
