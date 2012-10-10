@@ -3,3 +3,4 @@
 3. sudo chmod +x stress_cpu_employee1.sh
 4. sudo cp stress_cpu_employee1.sh /etc/init.d/
 5. sudo update-rc.d stress_cpu_employee1.sh defaults
+6. Stop the instance and make a snapshot of it.
