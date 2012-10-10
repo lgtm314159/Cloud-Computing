@@ -25,11 +25,11 @@ public class Simulator {
       // This includes manually running commands in the autoscaling-commands
       // file and ssh into instances for both employees to stop the cpu 
       // intensive.
-      while (i < 30) {
+      while (i < 120) {
         System.out.println("Monitoring CPU usage of instances...");
         instManager.examAndTermIdleInsts();
         try {
-          Thread.sleep(10000);
+          Thread.sleep(5000);
         } catch (InterruptedException e) {
           e.printStackTrace();
         }

@@ -38,7 +38,13 @@ public class InstanceManager {
         employee.setInstanceId(createdInstanceId);
         ec2OpWrapper.createS3Bucket(employee.getBucketName());
         employee.setActiveStat(true);
-      }      
+      }
+      // Waiting...
+      System.out.println("Wait another 2 mins before proceeding...");
+      long start = System.currentTimeMillis();
+      while ((System.currentTimeMillis() - start) < 3 * 60 * 1000) {
+        ;
+      }
     } catch (AmazonServiceException ase) {
       System.err.println("Caught Exception: " + ase.getMessage());
       System.err.println("Reponse Status Code: " + ase.getStatusCode());

@@ -265,51 +265,35 @@ public class Ec2OpWrapper {
     
     // Waiting...
     long start = System.currentTimeMillis();
-    while ((System.currentTimeMillis() - start) < 3 * 60 * 1000) {
+    while ((System.currentTimeMillis() - start) < 5 * 60 * 1000) {
       ;
     }
+    
     /*
     while (state.size() < 1 ||
         !state.get(0).getInstanceState().getName().equals("stopped")) {
+      
       try {
-        Thread.sleep(5000);
+        Thread.sleep(10000);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
       describeInstanceResult = ec2.describeInstanceStatus(describeInstanceRequest);
       state = describeInstanceResult.getInstanceStatuses();
-    }
-    */
+    }*/
+    
     CreateImageRequest cir = new CreateImageRequest();
     cir.setInstanceId(instanceId);
     cir.setName(amiName);
     CreateImageResult createImageResult = ec2.createImage(cir);
     String createdImageId = createImageResult.getImageId();
     
-    boolean isImaging = true;
     System.out.println("Waiting for snapshot to be fully created...");
     // Waiting...
     start = System.currentTimeMillis();
-    while ((System.currentTimeMillis() - start) < 4 * 60 * 1000) {
+    while ((System.currentTimeMillis() - start) < 5 * 60 * 1000) {
       ;
     }
-    /*
-    while (isImaging) {
-      isImaging = false;
-      DescribeImagesRequest describeRequest = new DescribeImagesRequest().withImageIds(createdImageId);
-      DescribeImagesResult describeResponse = ec2.describeImages(describeRequest);
-      List<Image> images = describeResponse.getImages();
-      if (images.get(0).getState() != "available") {
-        System.out.println("Still imaging...");
-        isImaging = true;
-        try {
-          Thread.sleep(10000);
-        } catch (InterruptedException e) {
-          e.printStackTrace();
-        } 
-      }
-    }
-    */
     System.out.println("Snapshot has been fully created!");
     return createdImageId;
   }
@@ -376,7 +360,7 @@ public class Ec2OpWrapper {
   public void createS3Bucket(String bucketName) {    
     s3.createBucket(bucketName);
   }
-  
+
   public void createS3Files(ArrayList<String> fileNames, String bucketName) {
     for (String fileName: fileNames) {
       //set key
