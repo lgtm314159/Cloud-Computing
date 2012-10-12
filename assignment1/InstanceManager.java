@@ -64,7 +64,7 @@ public class InstanceManager {
           String newVolumeId ="";
           System.out.println("Restoring the volume from the snaphot stored in S3");
           for (String volumeId: employee.getVolumeIds()) {
-        	 newVolumeId =  ec2OpWrapper.createVolumeFromSnapshot(employee.getSnapshotId(volumeId),"us-east-1b");
+        	 newVolumeId =  ec2OpWrapper.createVolumeFromSnapshot(employee.getSnapshotId(volumeId),"us-east-1a");
         	 System.out.println("Got new volume: "+newVolumeId+"for snapshot "+employee.getSnapshotId(volumeId));
           }
 

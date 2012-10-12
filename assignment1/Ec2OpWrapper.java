@@ -133,7 +133,7 @@ public class Ec2OpWrapper {
     ArrayList<String> securityGroups = new ArrayList<String>();
     securityGroups.add(groupName);
     rir.setSecurityGroups(securityGroups);
-   Placement placement = new Placement("us-east-1b");
+   Placement placement = new Placement("us-east-1a");
    rir.setPlacement(placement);
     RunInstancesResult result = ec2.runInstances(rir);
 
@@ -192,7 +192,7 @@ public class Ec2OpWrapper {
   public String createVolume() throws AmazonServiceException {
     // Create a volume.
     CreateVolumeRequest cvr = new CreateVolumeRequest();
-   cvr.setAvailabilityZone("us-east-1b");
+   cvr.setAvailabilityZone("us-east-1a");
     cvr.setSize(1); // size = 1 gigabytes
     CreateVolumeResult volumeResult = ec2.createVolume(cvr);
     String createdVolumeId = volumeResult.getVolume().getVolumeId();
@@ -401,7 +401,7 @@ public class Ec2OpWrapper {
 	     System.out.println("snapState is " + snapState);
 	     // Wait for the snapshot to be created
 	     
-	     
+	     /*
 	     DescribeSnapshotsRequest describeSnapshotsRequest =
 	    	        new DescribeSnapshotsRequest().withSnapshotIds(snap.getSnapshotId());
 	     DescribeSnapshotsResult  describeSnapshotsResult =
@@ -418,7 +418,13 @@ public class Ec2OpWrapper {
 	    	        System.out.print(".");
 	    	        state = describeSnapshotsResult.getSnapshots().get(0).getState();
 	    	     }
-	    	       
+	    	      */
+	      // Waiting...
+	     /*
+	      long start = System.currentTimeMillis();
+	      while ((System.currentTimeMillis() - start) < 3 * 60 * 1000) {
+	        ;
+	      }*/
 	    	    
 	    	    System.out.println("Done.");
 	  	return snap.getSnapshotId();

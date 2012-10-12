@@ -20,12 +20,12 @@ public class Simulator {
       instManager.initialize();
       System.out.println("Doing some work...");
       int i = 0;
-      // 10 mins for testing the elastic provisioning for super user employee2
+      // 8 mins for testing the elastic provisioning for super user employee2
       // and automatic termination of idle instance of user employee1.
       // This includes manually running commands in the autoscaling-commands
       // file and ssh into instances for both employees to stop the cpu 
       // intensive.
-      while (i < 120) {
+      while (i < 96) {
         System.out.println("Monitoring CPU usage of instances...");
         instManager.examAndTermIdleInsts();
         try {
