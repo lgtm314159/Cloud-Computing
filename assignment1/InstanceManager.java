@@ -25,10 +25,10 @@ public class InstanceManager {
     try {
       for(Employee employee: employees) {
         ec2OpWrapper.createKeyPair(employee.getKeyPairName());
-        ec2OpWrapper.createSecurityGroup(employee.getGroup(),
-            employee.getGroup(), policy);
-        String elasticIp = ec2OpWrapper.createElasticIp();
-        employee.setIp(elasticIp);
+    	  ec2OpWrapper.createSecurityGroup(employee.getGroup(),
+          employee.getGroup(), policy);
+   String elasticIp = ec2OpWrapper.createElasticIp();
+       employee.setIp(elasticIp);
         String volumeId = ec2OpWrapper.createVolume();
         employee.addVolumeId(volumeId);
         
@@ -36,7 +36,7 @@ public class InstanceManager {
             employee.getKeyPairName(), employee.getGroup(), employee.getIp(),
             employee.getVolumeIds(), employee.getUsername());
         employee.setInstanceId(createdInstanceId);
-        ec2OpWrapper.createS3Bucket(employee.getBucketName());
+      ec2OpWrapper.createS3Bucket(employee.getBucketName());
         employee.setActiveStat(true);
       }
       // Waiting...
@@ -46,7 +46,7 @@ public class InstanceManager {
         ;
       }
     } catch (AmazonServiceException ase) {
-      System.err.println("Caught Exception: " + ase.getMessage());
+      System.err.println("Caught Exception1: " + ase.getMessage());
       System.err.println("Reponse Status Code: " + ase.getStatusCode());
       System.err.println("Error Code: " + ase.getErrorCode());
       System.err.println("Request ID: " + ase.getRequestId());
@@ -61,6 +61,14 @@ public class InstanceManager {
               employee.getVolumeIds(), employee.getUsername());
           employee.setInstanceId(createdInstanceId);
           employee.setActiveStat(true);
+          String newVolumeId ="";
+          System.out.println("Restoring the volume from the snaphot stored in S3");
+          for (String volumeId: employee.getVolumeIds()) {
+        	 newVolumeId =  ec2OpWrapper.createVolumeFromSnapshot(employee.getSnapshotId(volumeId),"us-east-1b");
+        	 System.out.println("Got new volume: "+newVolumeId+"for snapshot "+employee.getSnapshotId(volumeId));
+          }
+
+          
       }
     } catch (AmazonServiceException ase) {
       System.err.println("Caught Exception: " + ase.getMessage());
@@ -74,6 +82,8 @@ public class InstanceManager {
     try {
       for(Employee employee: employees) {
         if (employee.isActive()) {
+          System.out.println("Creating snapshot of volumes");
+          this.snapshotVolumeOfEmployee(employee);
           String amiName = employee.getUsername() + "-" + new Random().nextInt();
           String amiId = snapshotAndTermInst(employee.getInstanceId(),
               employee.getVolumeIds(), employee.getIp(), amiName);
@@ -89,12 +99,23 @@ public class InstanceManager {
     }
   }
 
+  public void snapshotVolumeOfEmployee(Employee employee){
+	  String snapshotId= "";
+	  for(String volumeId: employee.getVolumeIds()){
+		  snapshotId = ec2OpWrapper.createVolumeSnapShot(volumeId);
+		  employee.setSnapshotId(volumeId,snapshotId);
+		  System.out.println("Got snapshot: "+snapshotId+" for volume: "+ volumeId);
+	  }
+  }
   public void examAndTermIdleInsts() {
     for(Employee employee: employees) {
       if (employee.isActive()) {
         if ((ec2OpWrapper.getCpuUsage(employee.getInstanceId(), 10)) < 10) {
+        	
           System.out.println("Terminating idle instance " + 
               employee.getInstanceId() + " of " + employee.getUsername());
+          System.out.println("Creating snapshot of volumes");
+          this.snapshotVolumeOfEmployee(employee);
           String amiName = employee.getUsername() + "-" + new Random().nextInt();
           String amiId = snapshotAndTermInst(employee.getInstanceId(),
               employee.getVolumeIds(), employee.getIp(), amiName);
@@ -104,6 +125,7 @@ public class InstanceManager {
       }
     }
   }
+  
 
   public String createInstance(String amiId, String keyPairName,
       String groupName, String ip, ArrayList<String> volumeIds, String tag) 
