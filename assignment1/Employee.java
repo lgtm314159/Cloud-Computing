@@ -1,6 +1,8 @@
 package assignment1;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Employee {
   private String username;
@@ -11,6 +13,7 @@ public class Employee {
   private String amiId;
   private String keyPairName;
   private ArrayList<String> volumeIds;
+  private Map<String,String> snapshotIds;
   private String bucketName;
   private boolean isActive;
   
@@ -18,6 +21,7 @@ public class Employee {
     this.username = username;
     this.group = group;
     this.volumeIds = new ArrayList<String>();
+    this.snapshotIds = new HashMap<String,String>();
   }
 
   public String getUsername() {
@@ -26,6 +30,17 @@ public class Employee {
 
   public void setUsername(String username) {
     this.username = username;
+  }
+  
+  public String getSnapshotId(String volumeId){
+    return snapshotIds.get(volumeId);
+  }
+  public Map<String,String> getSnapshotIds(){
+	  return snapshotIds;
+  }
+  
+  public void setSnapshotId(String volumeId,String snapshotId){
+	 this.snapshotIds.put(volumeId,snapshotId);
   }
   
   public String getGroup() {
