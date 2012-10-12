@@ -33,6 +33,8 @@ import com.amazonaws.services.ec2.model.CreateImageResult;
 import com.amazonaws.services.ec2.model.CreateKeyPairRequest;
 import com.amazonaws.services.ec2.model.CreateKeyPairResult;
 import com.amazonaws.services.ec2.model.CreateSecurityGroupRequest;
+import com.amazonaws.services.ec2.model.CreateSnapshotRequest;
+import com.amazonaws.services.ec2.model.CreateSnapshotResult;
 import com.amazonaws.services.ec2.model.CreateTagsRequest;
 import com.amazonaws.services.ec2.model.CreateVolumeRequest;
 import com.amazonaws.services.ec2.model.CreateVolumeResult;
@@ -40,6 +42,8 @@ import com.amazonaws.services.ec2.model.DescribeImagesRequest;
 import com.amazonaws.services.ec2.model.DescribeImagesResult;
 import com.amazonaws.services.ec2.model.DescribeInstanceStatusRequest;
 import com.amazonaws.services.ec2.model.DescribeInstanceStatusResult;
+import com.amazonaws.services.ec2.model.DescribeSnapshotsRequest;
+import com.amazonaws.services.ec2.model.DescribeSnapshotsResult;
 import com.amazonaws.services.ec2.model.DetachVolumeRequest;
 import com.amazonaws.services.ec2.model.DisassociateAddressRequest;
 import com.amazonaws.services.ec2.model.Image;
@@ -49,6 +53,7 @@ import com.amazonaws.services.ec2.model.IpPermission;
 import com.amazonaws.services.ec2.model.Placement;
 import com.amazonaws.services.ec2.model.RunInstancesRequest;
 import com.amazonaws.services.ec2.model.RunInstancesResult;
+import com.amazonaws.services.ec2.model.Snapshot;
 import com.amazonaws.services.ec2.model.StopInstancesRequest;
 import com.amazonaws.services.ec2.model.Tag;
 import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
@@ -128,8 +133,8 @@ public class Ec2OpWrapper {
     ArrayList<String> securityGroups = new ArrayList<String>();
     securityGroups.add(groupName);
     rir.setSecurityGroups(securityGroups);
-    Placement placement = new Placement("us-east-1a");
-    rir.setPlacement(placement);
+   Placement placement = new Placement("us-east-1b");
+   rir.setPlacement(placement);
     RunInstancesResult result = ec2.runInstances(rir);
 
     // Get instanceId from the result.
@@ -187,7 +192,7 @@ public class Ec2OpWrapper {
   public String createVolume() throws AmazonServiceException {
     // Create a volume.
     CreateVolumeRequest cvr = new CreateVolumeRequest();
-    cvr.setAvailabilityZone("us-east-1a");
+   cvr.setAvailabilityZone("us-east-1b");
     cvr.setSize(1); // size = 1 gigabytes
     CreateVolumeResult volumeResult = ec2.createVolume(cvr);
     String createdVolumeId = volumeResult.getVolume().getVolumeId();
@@ -343,7 +348,7 @@ public class Ec2OpWrapper {
     
     while(statResult.getDatapoints().size() == 0) {
       System.out.println("Still waiting for CPU utilization metrics ... " +
-      		"Please be patient...");
+        	"Please be patient...");
       System.out.println(statResult);
       try {
         Thread.sleep(30000);
@@ -383,4 +388,46 @@ public class Ec2OpWrapper {
       }
     }
   }
-}
+  
+  public String createVolumeSnapShot(String volumeId){
+	  	CreateSnapshotResult snapRes
+	  	= ec2.createSnapshot(new CreateSnapshotRequest(volumeId, "Snapshot"));
+	  	Snapshot snap = snapRes.getSnapshot();
+	  	 System.out.println("Snapshot request sent.");
+	     System.out.println("Waiting for snapshot to be created");
+	 
+	     String snapState = snap.getState();
+	        	
+	     System.out.println("snapState is " + snapState);
+	     // Wait for the snapshot to be created
+	     
+	     
+	     DescribeSnapshotsRequest describeSnapshotsRequest =
+	    	        new DescribeSnapshotsRequest().withSnapshotIds(snap.getSnapshotId());
+	     DescribeSnapshotsResult  describeSnapshotsResult =
+	    	        ec2.describeSnapshots(describeSnapshotsRequest);
+	    	    String state = describeSnapshotsResult.getSnapshots().get(0).getState();
+	    	    while (state.equals("pending"))
+	    	     {
+	    	        try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+	    	        System.out.print(".");
+	    	        state = describeSnapshotsResult.getSnapshots().get(0).getState();
+	    	     }
+	    	       
+	    	    
+	    	    System.out.println("Done.");
+	  	return snap.getSnapshotId();
+	 
+  }
+  
+  public String createVolumeFromSnapshot(String snapshotId, String zone){
+	  CreateVolumeResult volRes
+      = ec2.createVolume(new CreateVolumeRequest(snapshotId,zone));
+	  String newVolumeId = volRes.getVolume().getVolumeId();
+	  return newVolumeId;
+  }
