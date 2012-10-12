@@ -348,7 +348,7 @@ public class Ec2OpWrapper {
     
     while(statResult.getDatapoints().size() == 0) {
       System.out.println("Still waiting for CPU utilization metrics ... " +
-        	"Please be patient...");
+      		"Please be patient...");
       System.out.println(statResult);
       try {
         Thread.sleep(30000);
@@ -431,3 +431,4 @@ public class Ec2OpWrapper {
 	  String newVolumeId = volRes.getVolume().getVolumeId();
 	  return newVolumeId;
   }
+}
