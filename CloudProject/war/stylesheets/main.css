@@ -1,0 +1,123 @@
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 15px;
+  margin: none;
+  padding: none;
+}
+
+p {
+  line-height: 180%;
+  margin-top: 0;
+}
+
+h2 {
+  margin-bottom: 30px;
+  color: #32639a;
+}
+
+#header {
+  position: relative;
+  font-size: 18px;
+  height: 150px;
+  background-color: #0a4ec4;
+}
+
+#header h1 {
+  font-size: 48px;
+  position: absolute;
+  color: white;
+  top: 20px;
+  left: 150px;
+}
+
+#mainMenu {
+  width: 1180px;
+}
+
+#mainMenu #header ul {
+  border-top: none;
+  border-right: none;
+  border-left: none;
+  padding: 0px;
+  background-color: #0a4ec4;
+  position: absolute;
+  bottom: 0px;
+  right: 0px;
+}
+
+#mainMenu #header ul li {
+  float: left;
+}
+
+#loginForm {
+  margin-left: auto;
+  margin-right: auto;
+  width: 320px;
+}
+
+#login {
+  margin-left: auto;
+  margin-right: auto;
+  width: 320px;
+}
+
+
+#content {
+  float: left;
+  padding: 30px 0px 0px 0px;
+}
+
+.post {
+  margin-bottom: 15px;
+}
+
+.post .title {
+}
+
+.post .meta {
+  height: 30px;
+  background: #D8E7FE;
+  margin: 0px;
+  /*padding: 0px 0px 0px 0px;*/
+  text-align: left;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.post .meta .date {
+  float: left;
+  height: 24px;
+  padding: 3px 15px;
+  color: #4A81DE;
+}
+
+.post .meta .poster {
+  float: right;
+  height: 24px;
+  padding: 3px 15px;
+  background: #A8CF64;
+  color: #FFFFFF;
+}
+
+#tab-home .post .meta a {
+  color: #FFFFFF;
+}
+
+.post .entry {
+  padding: 0px 0px 20px 0px;
+  padding-bottom: 20px;
+  text-align: justify;
+}
+
+.links {
+  font-size: 12px;
+  font-weight: bold;
+}
+
+#tab-home .links a {
+  text-decoration: none;
+  color: #4486C7;
+}
+
+
