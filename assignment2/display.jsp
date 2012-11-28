@@ -38,12 +38,11 @@ document.getElementById('key').value = 'uploads/' + filename;
 <div id='mediaplayer'>This text will be replaced</div>
 
 <% 
+  AWSCredentials credentials = new PropertiesCredentials(
+      new File("AwsCredentials.properties"));
 
-			AWSCredentials credentials = new PropertiesCredentials(
-    			new File("AwsCredentials.properties"));
-
-         try{
-        	 AmazonS3Client s3Client = new AmazonS3Client(credentials);
+    try{
+      AmazonS3Client s3Client = new AmazonS3Client(credentials);
 
         			 ObjectListing images = s3Client.listObjects("rameezjunyang"); 
         			 ArrayList<String> objectList = new ArrayList<String>();
