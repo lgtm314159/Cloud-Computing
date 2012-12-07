@@ -3,7 +3,8 @@
 <%@ page import="com.restfb.FacebookClient" %>
 <%@ page import="com.restfb.DefaultFacebookClient" %>
 <%@ page import="com.restfb.types.User" %>
-<%@ page import="com.restfb.Connection;" %>
+<%@ page import="com.restfb.Connection" %>
+<%@ page import="com.restfb.types.Post" %>
 
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
@@ -14,22 +15,19 @@
 </head>
 <body>
 <%
-
-
 String accessToken = request.getParameter("accessToken");
 FacebookClient facebookClient = new DefaultFacebookClient(accessToken);
 Connection<User> myFriends = facebookClient.fetchConnection("me/friends", User.class);
+Connection<Post> myFeed = facebookClient.fetchConnection("me/feed", Post.class);
+int size = myFriends.getData().size();
+
+
 %>
 
-<p>Count of my friends: <% myFriends.getData().size())%></p>p>
-<p>First item in my feed: <% myFeed.getData().get(0))%>
+<p>Count of my friends: <%=size %></p>
 
-// Connections support paging and are iterable
 
-<%  for (List<Post> myFeedConnectionPage : myFeed)
-  for (Post post : myFeedConnectionPage)
-	  %>
-    <p>Post:</p><%post%>
+
 
 
 
