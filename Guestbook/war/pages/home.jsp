@@ -35,6 +35,7 @@
       <li><a href="/pages/radio.jsp" id="radioLink">Radio</a></li>
       <li><a href="/pages/video.jsp" id="videoLink">Video</a></li>
       <li><a href="/pages/about.jsp" id="aboutLink">About</a></li>
+      <li><a href="/pages/radioSummary.jsp" id="textRadio">Text Radio</a></li>
     </ul>
     </div> <!-- end header -->
 

@@ -8,8 +8,8 @@ import java.net.URL;
 import javax.servlet.http.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-
-
+import java.io.*;
+import java.util.*;
 
 @SuppressWarnings("serial")
 public class FBAuth extends HttpServlet {
@@ -19,6 +19,7 @@ public class FBAuth extends HttpServlet {
     String appSecret = "a785b19b316494e82d70ab4ab93147ef";
     String redirectUrl = "http://localhost:8888/fbauth";
     try {
+    	 PrintWriter out = resp.getWriter();
       MessageDigest md = MessageDigest.getInstance("MD5");
       byte[] state = md.digest("mystate".getBytes());
       String authUrl = "http://www.facebook.com/dialog/oauth/?" +
@@ -46,7 +47,8 @@ public class FBAuth extends HttpServlet {
         in.close();
         System.out.println(res);
         String accessToken = res.split("=")[1].split("&expires")[0];
-        System.out.println(accessToken);
+        resp.sendRedirect("/pages/textRadio.jsp?accessToken="+accessToken);
+        
       }
     } catch (NoSuchAlgorithmException e) {
       // TODO Auto-generated catch block
