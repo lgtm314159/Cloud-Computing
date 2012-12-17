@@ -1,8 +1,15 @@
 package guestbook;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.channels.Channels;
+
 import javax.servlet.http.*;
 
+import com.google.appengine.api.files.AppEngineFile;
+import com.google.appengine.api.files.FileService;
+import com.google.appengine.api.files.FileServiceFactory;
+import com.google.appengine.api.files.FileWriteChannel;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
@@ -22,4 +29,5 @@ public class GuestbookServlet extends HttpServlet {
         resp.sendRedirect(userService.createLoginURL(req.getRequestURI()));
       }
   }
+  
 }
